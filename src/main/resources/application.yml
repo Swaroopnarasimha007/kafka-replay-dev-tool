@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    default: demo
+  main:
+    banner-mode: off
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+replay:
+  topic-pattern: '.*(?:DLT|dlt|dead-letter).*'
+logging:
+  level:
+    org.apache.kafka: OFF

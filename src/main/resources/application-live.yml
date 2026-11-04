@@ -1,0 +1,22 @@
+# Values are supplied through environment variables or an external config file.
+spring:
+  datasource:
+    url: ${REPLAY_DB_URL}
+    username: ${REPLAY_DB_USER}
+    password: ${REPLAY_DB_PASSWORD}
+  security:
+    oauth2:
+      client:
+        registration:
+          console:
+            provider: console
+            client-id: ${REPLAY_OIDC_CLIENT_ID}
+            client-secret: ${REPLAY_OIDC_CLIENT_SECRET}
+            scope: openid,profile
+        provider:
+          console:
+            issuer-uri: ${REPLAY_OIDC_ISSUER}
+replay:
+  encryption-key: ${REPLAY_ENCRYPTION_KEY}
+  allowed-hosts: ${REPLAY_ALLOWED_HOSTS}
+  allow-plaintext: ${REPLAY_ALLOW_PLAINTEXT:false}
