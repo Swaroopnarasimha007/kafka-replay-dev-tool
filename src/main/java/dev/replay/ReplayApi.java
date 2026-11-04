@@ -13,7 +13,9 @@ import org.springframework.http.HttpStatus;
 class ReplayApi {
     private final Planner planner;
     private final Profiles profiles;
-    ReplayApi(Planner planner, Profiles profiles) { this.planner=planner; this.profiles=profiles; }
+    private final WorkerStore worker;
+    private final WorkerMetrics metrics;
+    ReplayApi(Planner planner, Profiles profiles, WorkerStore worker, WorkerMetrics metrics) { this.planner=planner; this.profiles=profiles;this.worker=worker;this.metrics=metrics; }
 
     Planner.Actor actor(Authentication authentication) {
         if (!profiles.live) return new Planner.Actor("demo",Set.of("Viewer","Operator","Admin"));
@@ -33,10 +35,14 @@ class ReplayApi {
     @GetMapping("/jobs") List<Planner.Job> jobs(Authentication auth) { return planner.jobs(actor(auth)); }
     @GetMapping("/jobs/{id}") Planner.Job job(@PathVariable String id, Authentication auth) { return planner.job(id,actor(auth)); }
     @GetMapping("/jobs/{id}/verifier") Planner.StoredJob verifier(@PathVariable String id, Authentication auth) { return planner.verifier(id,actor(auth)); }
-    @PostMapping("/jobs/{id}/release") Planner.Job release(@PathVariable String id, Authentication auth) { return planner.release(id,actor(auth)); }
+    @PostMapping("/jobs/{id}/start") Planner.Job start(@PathVariable String id, Authentication auth) { return worker.command(id,"start",actor(auth)); }
+    @PostMapping("/jobs/{id}/release") Planner.Job release(@PathVariable String id, Authentication auth) { return worker.command(id,"release",actor(auth)); }
+    @PostMapping("/jobs/{id}/pause") Planner.Job pause(@PathVariable String id, Authentication auth) { return worker.command(id,"pause",actor(auth)); }
+    @PostMapping("/jobs/{id}/resume") Planner.Job resume(@PathVariable String id, Authentication auth) { return worker.command(id,"resume",actor(auth)); }
+    @GetMapping("/jobs/{id}/dashboard") Map<String,Object> dashboard(@PathVariable String id,Authentication auth) { return metrics.dashboard(id,actor(auth)); }
     @GetMapping("/state-contract") Map<String,Object> states() {
-        return Map.of("workerEnabled",false,"initial","APPROVED","transitions",JobStates.TRANSITIONS,
-                "release","Idempotent AWAITING_RELEASE → RUNNING; unavailable while worker is disabled");
+        return Map.of("workerEnabled",worker.enabled(),"initial","APPROVED","transitions",JobStates.TRANSITIONS,
+                "release","Idempotent AWAITING_RELEASE → RUNNING; repeated release never resumes a paused job");
     }
 }
 

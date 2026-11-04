@@ -73,6 +73,13 @@ class Profiles {
  }
  List<Profile> list(){return live?db.query("SELECT id,name,bootstrap,cluster_id FROM cluster_profiles",(r,n)->new Profile(r.getString(1),r.getString(2),r.getString(3),r.getString(4))):List.of(new Profile("demo","Synthetic incident sandbox","synthetic","demo-cluster"));}
  Input credentials(String id){try {return json.readValue(decrypt(db.queryForObject("SELECT secret FROM cluster_profiles WHERE id=?",String.class,id)),Input.class);}catch(Exception e){throw new IllegalArgumentException("Profile unavailable");}}
+ Properties replayProps(String id) {
+  var in=credentials(id);
+  if("PLAINTEXT".equals(in.protocol()))return props(in); // Explicit local development transport.
+  if(in.replayUsername()==null||in.replayUsername().isBlank()||in.replayPassword()==null||in.replayPassword().isBlank())
+   throw new ReplayTransport.Blocked("REPLAY_PRINCIPAL_REQUIRED: configure separate worker credentials");
+  return props(new Input(in.name(),in.bootstrap(),in.protocol(),in.replayUsername(),in.replayPassword(),in.caPem(),null,null));
+ }
  String encrypt(String value)throws Exception {byte[] nonce=new byte[12];new SecureRandom().nextBytes(nonce);var c=Cipher.getInstance("AES/GCM/NoPadding");c.init(Cipher.ENCRYPT_MODE,new SecretKeySpec(key,"AES"),new GCMParameterSpec(128,nonce));return Base64.getEncoder().encodeToString(nonce)+":"+Base64.getEncoder().encodeToString(c.doFinal(value.getBytes(StandardCharsets.UTF_8)));}
  String decrypt(String value)throws Exception {var parts=value.split(":");var c=Cipher.getInstance("AES/GCM/NoPadding");c.init(Cipher.DECRYPT_MODE,new SecretKeySpec(key,"AES"),new GCMParameterSpec(128,Base64.getDecoder().decode(parts[0])));return new String(c.doFinal(Base64.getDecoder().decode(parts[1])),StandardCharsets.UTF_8);}
  void audit(String actor,String action,String coordinates){if(live)db.update("INSERT INTO browse_audit(actor,action,coordinates) VALUES (?,?,?)",actor,action,coordinates);}

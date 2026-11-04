@@ -48,7 +48,7 @@ class PlannerTest {
             assertEquals(1,db.queryForObject("SELECT count(*) FROM replay_previews",Integer.class));
             var restarted=new Planner(profiles,source,new ObjectMapper());var job=restarted.job(ids.iterator().next(),OPERATOR);
             assertEquals(60,job.count());assertEquals(p.digest(),job.digest());assertEquals(p.mapping(),job.mapping());
-            assertEquals("APPROVED",job.state());assertFalse(job.workerEnabled());
+            assertEquals("APPROVED",job.state());assertTrue(job.workerEnabled());
         } finally {executor.shutdownNow();}
     }
     @Test void conflictingKeyAndStaleMappingsRequireReview() {
@@ -85,7 +85,7 @@ class PlannerTest {
         assertFalse(entries.get(0).headers().stream().anyMatch(h->m.removeHeaders().contains(h.name())));
         var bad=new Browser.Row("orders.DLT",0,0,0,null,null,List.of(),false);
         assertThrows(IllegalArgumentException.class,()->Manifest.extract(bad,m,0));
-        assertThrows(Planner.Conflict.class,()->planner.release(planner.approve(approval(p,"disabled"),OPERATOR).id(),OPERATOR));
+        assertThrows(Planner.Conflict.class,()->new WorkerStore(planner,profiles).command(planner.approve(approval(p,"not-started"),OPERATOR).id(),"release",OPERATOR));
     }
     @Test void stateContractIsTerminalAndReleaseIsIdempotent() {
         assertEquals(JobStates.State.RUNNING,JobStates.release(JobStates.State.AWAITING_RELEASE));

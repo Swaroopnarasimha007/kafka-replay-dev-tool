@@ -11,6 +11,13 @@ server:
     include-stacktrace: never
 replay:
   topic-pattern: '.*(?:DLT|dlt|dead-letter).*'
+  worker-enabled: false
+  scheduler-enabled: true
+  batch-size: 50
+  lease-ms: 60000
+  authorization-ms: 900000
+  receipts-topic: _replay_console_receipts
+  recoverability-ms: 604800000
 logging:
   level:
     org.apache.kafka: OFF

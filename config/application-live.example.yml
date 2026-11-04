@@ -1,0 +1,23 @@
+# Supply secret values through environment variables or a deployment secret manager.
+# Launch: java -jar replay-console.jar --spring.profiles.active=live --spring.config.additional-location=file:./application-live.example.yml
+server:
+  address: 127.0.0.1
+  port: 8080
+spring:
+  datasource:
+    url: ${REPLAY_DB_URL}
+    username: ${REPLAY_DB_USER}
+    password: ${REPLAY_DB_PASSWORD}
+replay:
+  worker-enabled: ${REPLAY_WORKER_ENABLED:false}
+  allowed-hosts: ${REPLAY_ALLOWED_HOSTS}
+  encryption-key: ${REPLAY_ENCRYPTION_KEY}
+  allow-plaintext: false
+  receipts-topic: _replay_console_receipts
+  recoverability-ms: 604800000
+  max-receipt-offsets: 1000000
+  lease-ms: 60000
+  authorization-ms: 900000
+  batch-size: 50
+  # Optional destination group lag, sampled using the browse principal:
+  metrics-group: ${REPLAY_METRICS_GROUP:}

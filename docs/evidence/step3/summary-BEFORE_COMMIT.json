@@ -1,0 +1,21 @@
+{
+  "verified": 500,
+  "missing": 0,
+  "duplicate": 0,
+  "unapproved": 0,
+  "canary": 1,
+  "digest": "ec053ec84c589d4437cbb137df5d7df94f643fdc2429dd0e68baa1b70816eae6",
+  "jobId": "13b73e11-fc37-4259-bca3-7bddd14166bb",
+  "batches": 6,
+  "source": "independent read_committed consumer + byte/digest verifier",
+  "firstSource": {
+    "topic": "orders.DLT",
+    "partition": 0,
+    "offset": 0
+  },
+  "firstDestination": {
+    "topic": "orders",
+    "partition": 0,
+    "offset": 349
+  }
+}

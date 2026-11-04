@@ -2,17 +2,17 @@ package dev.replay;
 
 import java.util.*;
 
-/** Worker contract only. No step-2 endpoint can advance an approved job. */
+/** Worker state contract. Resume always reconciles receipts before another publish. */
 final class JobStates {
     enum State { APPROVED, CANARY_RUNNING, AWAITING_RELEASE, RUNNING, COMPLETED,
         COMPLETED_WITH_EXCEPTIONS, PAUSED, BLOCKED, FAILED }
     static final Map<State,Set<State>> TRANSITIONS = Map.of(
         State.APPROVED, Set.of(State.CANARY_RUNNING,State.RUNNING,State.BLOCKED,State.FAILED),
-        State.CANARY_RUNNING, Set.of(State.AWAITING_RELEASE,State.BLOCKED,State.FAILED),
+        State.CANARY_RUNNING, Set.of(State.AWAITING_RELEASE,State.PAUSED,State.BLOCKED,State.FAILED),
         State.AWAITING_RELEASE, Set.of(State.RUNNING,State.BLOCKED,State.FAILED),
         State.RUNNING, Set.of(State.PAUSED,State.BLOCKED,State.FAILED,State.COMPLETED,State.COMPLETED_WITH_EXCEPTIONS),
-        State.PAUSED, Set.of(State.RUNNING,State.BLOCKED,State.FAILED),
-        State.BLOCKED, Set.of(State.PAUSED,State.AWAITING_RELEASE,State.FAILED));
+        State.PAUSED, Set.of(State.CANARY_RUNNING,State.RUNNING,State.BLOCKED,State.FAILED),
+        State.BLOCKED, Set.of(State.CANARY_RUNNING,State.RUNNING,State.PAUSED,State.AWAITING_RELEASE,State.FAILED));
 
     static void require(State from, State to) {
         if (!TRANSITIONS.getOrDefault(from,Set.of()).contains(to)) throw new Planner.Conflict("Invalid job state transition");

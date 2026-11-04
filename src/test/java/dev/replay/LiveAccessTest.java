@@ -28,6 +28,7 @@ class LiveAccessTest {
   mvc.perform(post("/api/replay/previews").with(user("viewer").roles("Viewer")).with(csrf()).contentType("application/json").content("{}")).andExpect(status().isForbidden());
   mvc.perform(post("/api/replay/approvals").with(user("viewer").roles("Viewer")).with(csrf()).contentType("application/json").content("{}")).andExpect(status().isForbidden());
   mvc.perform(post("/api/replay/mappings").with(user("operator").roles("Operator")).with(csrf()).contentType("application/json").content("{}")).andExpect(status().isForbidden());
+  for(String command:java.util.List.of("start","release","pause","resume"))mvc.perform(post("/api/replay/jobs/id/"+command).with(user("viewer").roles("Viewer")).with(csrf()).contentType("application/json").content("{}")).andExpect(status().isForbidden());
  }
  @Test void noCsrfOrNoRoleIsDenied()throws Exception {
   mvc.perform(post("/api/profiles/test").with(user("admin").roles("Admin")).contentType("application/json").content("{}")).andExpect(status().isForbidden());

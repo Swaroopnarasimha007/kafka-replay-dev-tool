@@ -28,12 +28,12 @@ try {
  Stop-Process -Id $process.Id; $process.WaitForExit()
  Start-Console
  $reopened=Invoke-RestMethod "$base/replay/jobs/$($job.id)" -WebSession $web
- if($reopened.digest -ne $job.digest -or $reopened.count -ne 60 -or $reopened.state -ne 'APPROVED' -or $reopened.workerEnabled){throw 'Approved job changed across process restart'}
+ if($reopened.digest -ne $job.digest -or $reopened.count -ne 60 -or $reopened.state -ne 'APPROVED'){throw 'Approved job changed across process restart'}
  if($reopened.mapping.identity.targetId -ne $job.mapping.identity.targetId){throw 'Target identity changed'}
  $evidence=Join-Path $PSScriptRoot '..\target\step2-evidence'
  New-Item -ItemType Directory -Path $evidence -Force | Out-Null
  $reopened|ConvertTo-Json -Depth 20|Set-Content (Join-Path $evidence 'restarted-job.json')
- "PASS: packaged JAR mapping → fixed 60-record preview → approval → identical retry → process restart → same count/digest/target/policy; worker disabled; release=$release"
+ "PASS: packaged JAR mapping → fixed 60-record preview → approval → identical retry → process restart → same count/digest/target/policy; approval did not start execution; release=$release"
 } finally {
  if($process -and !$process.HasExited){Stop-Process -Id $process.Id; $process.WaitForExit()}
 }

@@ -39,12 +39,13 @@ class Planner {
     record StoredJob(Job job, Preview preview) {}
 
     final JdbcTemplate db;
+    private final Profiles profiles;
     private final ObjectMapper json;
     private final ReplaySource source;
     private final TransactionTemplate transactions;
 
     Planner(Profiles profiles, ReplaySource source, ObjectMapper json) {
-        this.db = profiles.db; this.source = source; this.json = json;
+        this.profiles=profiles;this.db = profiles.db; this.source = source; this.json = json;
         this.transactions = new TransactionTemplate(new DataSourceTransactionManager(db.getDataSource()));
     }
 
@@ -144,10 +145,12 @@ class Planner {
         return preview;
     }
     PreviewView getPreview(String id, Actor actor) { return view(loadPreview(id, actor)); }
-    static PreviewView view(Preview p) {
+    boolean workerEnabled() {return !profiles.live||profiles.env.getProperty("replay.worker-enabled",Boolean.class,false);}
+    Job currentJob(Job j,String state) {return new Job(j.id(),j.owner(),j.previewId(),j.digest(),j.count(),j.mapping(),j.rate(),j.reason(),j.canary(),state,workerEnabled());}
+    PreviewView view(Preview p) {
         return new PreviewView(p.id(), p.mapping(), p.rate(), p.entries().size(), p.digest(), p.scan().scanned(),
                 p.scan().partial(), p.scan().beginnings(), p.scan().boundaries(), p.scan().cursors(),
-                p.entries().stream().map(e -> new Coordinate(e.position(),e.partition(),e.offset(),e.fingerprint(),e.destinationPartition())).toList(), false);
+                p.entries().stream().map(e -> new Coordinate(e.position(),e.partition(),e.offset(),e.fingerprint(),e.destinationPartition())).toList(), workerEnabled());
     }
 
     Job approve(Approval request, Actor actor) {
@@ -172,7 +175,7 @@ class Planner {
                 if (version != preview.mapping().version()) throw new Conflict("Mapping changed after preview; review a new preview");
                 checkIdentity(preview.mapping());
                 var job = new Job(UUID.randomUUID().toString(), actor.name(), preview.id(), preview.digest(), preview.entries().size(),
-                        preview.mapping(), preview.rate(), request.reason(), request.canary(), JobStates.State.APPROVED.name(), false);
+                        preview.mapping(), preview.rate(), request.reason(), request.canary(), JobStates.State.APPROVED.name(), workerEnabled());
                 db.update("INSERT INTO replay_jobs(id,preview_id,owner_name,idempotency_key,request_hash,state,document) VALUES (?,?,?,?,?,?,?)",
                         job.id(), preview.id(), actor.name(), request.idempotencyKey(), requestHash, job.state(), encode(job));
                 db.update("INSERT INTO replay_events(job_id,event_type,actor) VALUES (?,?,?)", job.id(), "APPROVED", actor.name());
@@ -191,11 +194,12 @@ class Planner {
         var row = rows.get(0);
         if (!hash.equals(row.get("request_hash")) || !actor.name().equals(row.get("owner_name")))
             throw new Conflict("Idempotency key already belongs to a different approval request");
-        return decode((String)row.get("document"), Job.class);
+        var job=decode((String)row.get("document"), Job.class);
+        return currentJob(job,db.queryForObject("SELECT state FROM replay_jobs WHERE id=?",String.class,job.id()));
     }
     StoredJob storedJob(String id, Actor actor) {
         actor.operator();
-        var rows = db.query("SELECT document FROM replay_jobs WHERE id=?", (r,n) -> decode(r.getString(1), Job.class), id);
+        var rows = db.query("SELECT document,state FROM replay_jobs WHERE id=?", (r,n) -> currentJob(decode(r.getString(1), Job.class),r.getString(2)), id);
         if (rows.isEmpty()) throw new IllegalArgumentException("Job not found");
         var job = rows.get(0);
         if (!actor.admin() && !job.owner().equals(actor.name())) throw new AccessDeniedException("Job belongs to another operator");
@@ -205,16 +209,12 @@ class Planner {
     Job job(String id, Actor actor) { return storedJob(id,actor).job(); }
     List<Job> jobs(Actor actor) {
         actor.operator();
-        return db.query("SELECT document FROM replay_jobs WHERE owner_name=? OR ?=true ORDER BY approved_at DESC", (r,n) -> decode(r.getString(1),Job.class),actor.name(),actor.admin())
+        return db.query("SELECT document,state FROM replay_jobs WHERE owner_name=? OR ?=true ORDER BY approved_at DESC", (r,n) -> currentJob(decode(r.getString(1),Job.class),r.getString(2)),actor.name(),actor.admin())
                 .stream().filter(j -> { var m=mapping(j.mapping().id());return actor.admin()||m.allowedSubjects().isEmpty()||m.allowedSubjects().contains(actor.name()); }).toList();
     }
     StoredJob verifier(String id, Actor actor) {
         var stored = storedJob(id,actor);
         db.update("INSERT INTO browse_audit(actor,action,coordinates) VALUES (?,?,?)",actor.name(),"manifest-export",id);
         return stored;
-    }
-    Job release(String id, Actor actor) {
-        job(id,actor);
-        throw new Conflict("WORKER_DISABLED: release is unavailable until step 3 is accepted");
     }
 }

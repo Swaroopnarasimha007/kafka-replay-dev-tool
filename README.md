@@ -1,4 +1,4 @@
-# Kafka Replay Console — step 2
+# Kafka Replay Console — step 3
 
 Build (JDK 17–25; initial build needs network access):
 
@@ -34,7 +34,8 @@ system trust or a private CA PEM. Local PLAINTEXT requires
 encrypted in PostgreSQL. Keep the key stable across restarts; back it up separately.
 Kafka logging is disabled to prevent client diagnostic messages leaking credentials.
 Separate replay credentials are stored but never used by this read-only step.
-No producer, offset commits, group subscription, or replay worker exists in step 1.
+Browsing/planning never publishes or commits offsets. Step 3 adds an explicitly
+started transactional worker using separate replay credentials.
 
 Viewer can browse masked records. Operator can also reveal bytes. Admin additionally
 tests and saves profiles. Browser POSTs require the session CSRF token. Profile save
@@ -55,10 +56,12 @@ As an authorized Operator, select the mapping, set browse filters, rate and scan
 limit, and click **Freeze preview using current filters**. Review count, destination,
 policy changes, boundaries and digest. Explicitly select the displayed positions
 for a partial scan, supply a reason and choose whether to run a one-record canary,
-then approve. Reopen the job from **Approved jobs** after restart.
+then approve. Reopen the job from **Replay jobs** after restart.
 
-Approval appends no Kafka records. Execution and release remain disabled until
-step 3. Demo persists mappings/manifests/jobs in `./data/replay-demo*`; keep this
+Approval appends no Kafka records. Click **Start one-record canary**, inspect its
+committed receipt, then release remaining records. Live execution additionally
+requires `REPLAY_WORKER_ENABLED=true` and a provisioned receipt topic. Demo persists
+mappings/manifests/jobs/outputs in `./data/replay-demo*`; keep this
 directory with the release for restart persistence. Demo uses the same planner and
 approval code with synthetic source bytes. Live mode uses PostgreSQL.
 
@@ -71,3 +74,19 @@ python scripts\verify_manifest.py docs\fixtures\source-500.json docs\fixtures\ap
 See [planning API and state contract](docs/STEP_2_API.md) and
 [handover to step 3](docs/HANDOVER_STEP_2.md) for exact storage/digest rules,
 tests, fixtures, known pending environment checks and next implementation scope.
+
+## Execute and verify
+
+The [release runbook](docs/RELEASE_RUNBOOK.md) supersedes the historical step-2
+execution-disabled contract. It covers Start/canary/release/pause/resume, receipt
+retention, minimum ACLs, live/remote configuration and the exact recovery scope.
+
+```powershell
+.\scripts\smoke-worker.ps1
+.\scripts\test-crash-matrix.ps1
+.\scripts\package-release.ps1
+```
+
+The crash matrix kills a separate worker JVM at three transaction checkpoints and
+independently verifies 500 committed outputs. The [final handover](docs/HANDOVER_STEP_3.md)
+records fixture evidence separately from PostgreSQL, secured-broker and remote checks.

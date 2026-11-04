@@ -20,3 +20,5 @@ replay:
   encryption-key: ${REPLAY_ENCRYPTION_KEY}
   allowed-hosts: ${REPLAY_ALLOWED_HOSTS}
   allow-plaintext: ${REPLAY_ALLOW_PLAINTEXT:false}
+  worker-enabled: ${REPLAY_WORKER_ENABLED:false}
+  receipts-topic: ${REPLAY_RECEIPTS_TOPIC:_replay_console_receipts}

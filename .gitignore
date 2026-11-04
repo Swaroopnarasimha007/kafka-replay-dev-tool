@@ -5,3 +5,5 @@ frontend/node/
 *.log
 .env
 data/
+__pycache__/
+release/
