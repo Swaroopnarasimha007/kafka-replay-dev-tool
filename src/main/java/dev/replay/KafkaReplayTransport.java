@@ -19,7 +19,7 @@ class KafkaReplayTransport implements ReplayTransport {
     private final Planner planner;
     KafkaReplayTransport(Profiles profiles,Planner planner) { this.profiles=profiles;this.planner=planner; }
     public Session open(Planner.StoredJob job) {
-        return profiles.live?new KafkaSession(job):new DemoReplaySession(job,planner);
+        return profiles.real(job.job().mapping().profileId())?new KafkaSession(job):new DemoReplaySession(job,planner);
     }
     static byte[] bytes(String base64) { return base64==null?null:Base64.getDecoder().decode(base64); }
     static String hash(String json) { return Manifest.hash(out->out.write(json.getBytes(StandardCharsets.UTF_8))); }

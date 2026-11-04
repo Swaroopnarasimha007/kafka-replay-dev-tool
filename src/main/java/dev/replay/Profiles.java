@@ -15,6 +15,10 @@ import org.apache.kafka.common.errors.*;
 @Service
 class Profiles {
  public boolean isLive(){return live;}
+ boolean localEnabled(){return env.getProperty("replay.local-kafka.enabled",Boolean.class,false);}
+ boolean real(String id){return live||localEnabled()&&"kafka-local".equals(id);}
+ Input localInput(){return new Input("Kafka local demo",env.getProperty("replay.local-kafka.bootstrap","localhost:19092"),"PLAINTEXT",null,null,null,null,null);}
+
  record Input(String name,String bootstrap,String protocol,String username,String password,String caPem,String replayUsername,String replayPassword) {}
  record Profile(String id,String name,String bootstrap,String clusterId) {}
  record Tested(Input input,String clusterId,long expires) {}
@@ -22,7 +26,7 @@ class Profiles {
  final Map<String,Tested> tests=new ConcurrentHashMap<>();
  Profiles(Environment env,ObjectProvider<JdbcTemplate> jdbc,ObjectMapper json) {
   this.env=env; this.json=json; live=Arrays.asList(env.getActiveProfiles()).contains("live"); db=jdbc.getIfAvailable();
-  if(live&&Arrays.asList(env.getActiveProfiles()).contains("demo"))throw new IllegalStateException("Select only one of live or demo");
+  if(live&&(Arrays.asList(env.getActiveProfiles()).contains("demo")||Arrays.asList(env.getActiveProfiles()).contains("lab")))throw new IllegalStateException("Select only one of live or demo");
   if(live) {
    try {key=Base64.getDecoder().decode(env.getRequiredProperty("replay.encryption-key"));} catch(Exception e){throw new IllegalStateException("Live requires a base64 replay.encryption-key");}
    if(key.length!=32) throw new IllegalStateException("Encryption key must contain 32 bytes");
@@ -71,8 +75,8 @@ class Profiles {
   var tested=tests.remove(token); if(tested==null||tested.expires()<System.currentTimeMillis())throw new IllegalArgumentException("Test connection again before saving");
   try {var in=tested.input(); var profile=new Profile(UUID.randomUUID().toString(),in.name(),in.bootstrap(),tested.clusterId());db.update("INSERT INTO cluster_profiles VALUES (?,?,?,?,?)",profile.id(),profile.name(),profile.bootstrap(),profile.clusterId(),encrypt(json.writeValueAsString(in)));return profile;}catch(Exception e){throw new IllegalArgumentException("Profile could not be saved");}
  }
- List<Profile> list(){return live?db.query("SELECT id,name,bootstrap,cluster_id FROM cluster_profiles",(r,n)->new Profile(r.getString(1),r.getString(2),r.getString(3),r.getString(4))):List.of(new Profile("demo","Synthetic incident sandbox","synthetic","demo-cluster"));}
- Input credentials(String id){try {return json.readValue(decrypt(db.queryForObject("SELECT secret FROM cluster_profiles WHERE id=?",String.class,id)),Input.class);}catch(Exception e){throw new IllegalArgumentException("Profile unavailable");}}
+ List<Profile> list(){if(!live&&localEnabled())return List.of(new Profile("kafka-local","Kafka local demo",localInput().bootstrap(),"discover-on-connect"),new Profile("demo","Simulation","simulation","demo-cluster"));return live?db.query("SELECT id,name,bootstrap,cluster_id FROM cluster_profiles",(r,n)->new Profile(r.getString(1),r.getString(2),r.getString(3),r.getString(4))):List.of(new Profile("demo","Synthetic incident sandbox","synthetic","demo-cluster"));}
+ Input credentials(String id){if(!live&&localEnabled()&&"kafka-local".equals(id))return localInput();try {return json.readValue(decrypt(db.queryForObject("SELECT secret FROM cluster_profiles WHERE id=?",String.class,id)),Input.class);}catch(Exception e){throw new IllegalArgumentException("Profile unavailable");}}
  Properties replayProps(String id) {
   var in=credentials(id);
   if("PLAINTEXT".equals(in.protocol()))return props(in); // Explicit local development transport.

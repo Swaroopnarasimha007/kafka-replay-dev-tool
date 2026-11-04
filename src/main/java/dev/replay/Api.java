@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 class Api {
  final Profiles profiles;final Browser browser;
  Api(Profiles p,Browser b){profiles=p;browser=b;}
- @GetMapping("/session") Map<String,Object> session(HttpServletRequest request, CsrfToken csrf){return Map.of("mode",profiles.live?"live":"synthetic demo","user",request.getUserPrincipal()==null?"demo":request.getUserPrincipal().getName(),"roles",profiles.live?List.of("Viewer","Operator","Admin").stream().filter(request::isUserInRole).toList():List.of("Admin","Operator","Viewer"),"csrfToken",csrf.getToken());}
+ @GetMapping("/session") Map<String,Object> session(HttpServletRequest request, CsrfToken csrf){return Map.of("mode",profiles.live?"live":Arrays.asList(profiles.env.getActiveProfiles()).contains("lab")?"lab":"synthetic demo","user",request.getUserPrincipal()==null?"demo":request.getUserPrincipal().getName(),"roles",profiles.live?List.of("Viewer","Operator","Admin").stream().filter(request::isUserInRole).toList():List.of("Admin","Operator","Viewer"),"csrfToken",csrf.getToken());}
  @GetMapping("/profiles") @PreAuthorize("@profiles.live == false or hasAnyRole('Viewer','Operator','Admin')") List<Profiles.Profile> profiles(){return profiles.list();}
  @PostMapping("/profiles/test") @PreAuthorize("@profiles.live == false or hasRole('Admin')") Map<String,Object> test(@RequestBody Profiles.Input in){return profiles.test(in);}
  @PostMapping("/profiles") @PreAuthorize("@profiles.live == false or hasRole('Admin')") Profiles.Profile save(@RequestBody Map<String,String> body){return profiles.save(body.get("testToken"));}

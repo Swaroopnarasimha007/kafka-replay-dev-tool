@@ -28,14 +28,14 @@ class ReplaySource {
         if (source.equals(target)) throw new IllegalArgumentException("Source and destination must differ");
         var profile = profiles.list().stream().filter(p -> p.id().equals(profileId)).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Unknown profile"));
-        if (!profiles.live) {
+        if (!profiles.real(profileId)) {
             if (!source.equals("orders.DLT") || !target.equals("orders"))
                 throw new IllegalArgumentException("Demo supports orders.DLT → orders only");
             return new Identity("demo-cluster", "demo-orders-dlt-v1", "demo-orders-v1", 3);
         }
         try (Admin admin = Admin.create(profiles.props(profiles.credentials(profileId)))) {
             String clusterId = admin.describeCluster().clusterId().get(7, TimeUnit.SECONDS);
-            if (!profile.clusterId().equals(clusterId)) throw new Planner.Conflict("Cluster identity changed");
+            if (!profile.id().equals("kafka-local") && !profile.clusterId().equals(clusterId)) throw new Planner.Conflict("Cluster identity changed");
             var topics = admin.describeTopics(List.of(source, target)).allTopicNames().get(7, TimeUnit.SECONDS);
             var from = topics.get(source); var to = topics.get(target);
             if (from.topicId().equals(org.apache.kafka.common.Uuid.ZERO_UUID)
@@ -49,7 +49,7 @@ class ReplaySource {
     Scan scan(String profileId, String topic, Browser.Query filter, int maxScanned) {
         if (filter.cursors() != null && !filter.cursors().isEmpty())
             throw new IllegalArgumentException("Preview starts at retained beginnings; browse cursors are not selections");
-        if (!profiles.live) {
+        if (!profiles.real(profileId)) {
             var page = browser.demo(topic, filter, true, maxScanned, maxScanned);
             return new Scan(page.records(), page.beginnings(), page.boundaries(), page.cursors(), page.scanned(), page.truncated());
         }

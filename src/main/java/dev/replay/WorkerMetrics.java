@@ -16,7 +16,7 @@ class WorkerMetrics {
         var job=store.planner.job(id,actor);var execution=store.execution(id);
         var data=new LinkedHashMap<String,Object>();long time=store.now();
         data.put("job",job);data.put("observedAt",time);
-        data.put("source",store.profiles.live?"Committed Kafka receipts; PostgreSQL projection":"Synthetic committed receipts; local projection");
+        data.put("source",store.profiles.real(job.mapping().profileId())?"Committed Kafka receipts; database projection":"Synthetic committed receipts; local projection");
         data.put("started",execution!=null&&execution.startedAt()>0);
         data.put("published",execution==null?0:execution.published());data.put("skipped",execution==null?0:execution.skipped());
         data.put("processed",execution==null?0:execution.nextPosition());data.put("batches",execution==null?0:execution.batchCount());
@@ -44,7 +44,7 @@ class WorkerMetrics {
     }
     Map<String,Object> groupLag(Planner.Job job,long time) {
         String group=store.profiles.env.getProperty("replay.metrics-group","");
-        if(!store.profiles.live||group.isBlank())return Map.of("available",false,"reason","No live metrics group configured","observedAt",time,"source","Not sampled");
+        if(!store.profiles.real(job.mapping().profileId())||group.isBlank())return Map.of("available",false,"reason","No live metrics group configured","observedAt",time,"source","Not sampled");
         var properties=store.profiles.props(store.profiles.credentials(job.mapping().profileId()));
         try(Admin admin=Admin.create(properties)) {
             var offsets=admin.listConsumerGroupOffsets(group).partitionsToOffsetAndMetadata().get(5,TimeUnit.SECONDS);

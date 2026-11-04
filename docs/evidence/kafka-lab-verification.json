@@ -1,0 +1,48 @@
+{
+  "environment": "Native Java 25 on Windows; actual Apache Kafka 3.9.1 KRaft broker; H2 console store",
+  "applicationTopics": {
+    "orders": 3,
+    "orders.DLT": 3
+  },
+  "producers": 2,
+  "consumerGroupMembers": 2,
+  "scenarios": [
+    {
+      "name": "replay-success",
+      "jobId": "95d02bd1-4cb9-4405-91ce-56e176e416b7",
+      "state": "COMPLETED",
+      "committedOutputs": 25,
+      "skipped": 0,
+      "consumerProcessedReplays": 25
+    },
+    {
+      "name": "transport-failure",
+      "jobId": "33e1d1e8-de2d-4513-866b-fc73067d2c43",
+      "state": "BLOCKED",
+      "approvedRecords": 60,
+      "committedOutputs": 0,
+      "reason": "Destination message-size limit rejects large DLT records"
+    },
+    {
+      "name": "consumer-failure",
+      "jobId": "ef1172af-92a2-404b-bff0-647da4bf07db",
+      "state": "AWAITING_RELEASE",
+      "committedOutputs": 1,
+      "consumerDeadLetteredReplay": 1
+    },
+    {
+      "name": "attribute-validation",
+      "producerError": "NONE",
+      "amount": 100,
+      "consumerMinimumAmount": 150,
+      "deadLettered": 30
+    }
+  ],
+  "cloud": "Compose and HTTPS configuration provided; not executed because Docker Engine is not installed",
+  "existingTests": {
+    "run": 33,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

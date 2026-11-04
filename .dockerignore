@@ -1,0 +1,11 @@
+**/target
+**/node_modules
+**/node
+**/dist
+**/data
+**/.env
+**/.env.*
+**/.git
+**/*.log
+release
+.codex

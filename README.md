@@ -90,3 +90,7 @@ retention, minimum ACLs, live/remote configuration and the exact recovery scope.
 The crash matrix kills a separate worker JVM at three transaction checkpoints and
 independently verifies 500 committed outputs. The [final handover](docs/HANDOVER_STEP_3.md)
 records fixture evidence separately from PostgreSQL, secured-broker and remote checks.
+
+## Real Kafka lab
+
+The standalone Java project in [kafka_v1_implementation](kafka_v1_implementation/README.md) installs a real KRaft broker, two 3-partition application topics, two producers and two consumers. It includes editable success/failure scenarios, authenticated console startup, and a same-server cloud Compose stack.

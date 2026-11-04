@@ -16,7 +16,7 @@ class Browser {
  final Profiles profiles;
  Browser(Profiles p){profiles=p;}
  List<String> topics(String id) {
-  if(!profiles.live)return List.of("orders.DLT");
+  if(!profiles.real(id))return List.of("orders.DLT");
   try(Admin a=Admin.create(profiles.props(profiles.credentials(id)))) {return a.listTopics().names().get(7,java.util.concurrent.TimeUnit.SECONDS).stream().filter(this::approved).sorted().toList();}catch(Exception e){throw Profiles.failure(e);}
  }
  boolean approved(String topic){return topic.matches(profiles.env.getProperty("replay.topic-pattern"))||Arrays.asList(profiles.env.getProperty("replay.topics","").split(",")).contains(topic);}
@@ -33,7 +33,7 @@ class Browser {
   if(!approved(topic))throw new IllegalArgumentException("Topic is outside discovery policy");
   int limit=q.limit()==null?50:q.limit(), budget=q.scanLimit()==null?1000:q.scanLimit();
   if(limit<1||limit>200||budget<1||budget>10000)throw new IllegalArgumentException("Limit 1..200; scanLimit 1..10000");
-  if(!profiles.live)return demo(topic,q,reveal,limit,budget);
+  if(!profiles.real(id))return demo(topic,q,reveal,limit,budget);
   Properties p=profiles.props(profiles.credentials(id));p.put("key.deserializer",ByteArrayDeserializer.class);p.put("value.deserializer",ByteArrayDeserializer.class);p.put("enable.auto.commit","false");p.put("isolation.level","read_committed");p.put("max.poll.records","200");p.put("allow.auto.create.topics","false");
   try(var c=new KafkaConsumer<byte[],byte[]>(p)) {
    var parts=c.partitionsFor(topic).stream().filter(x->q.partition()==null||x.partition()==q.partition()).map(x->new TopicPartition(topic,x.partition())).sorted(Comparator.comparingInt(TopicPartition::partition)).toList();

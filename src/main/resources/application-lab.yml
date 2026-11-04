@@ -1,0 +1,19 @@
+server:
+  address: ${LAB_BIND:127.0.0.1}
+  port: ${LAB_PORT:8080}
+  forward-headers-strategy: framework
+spring:
+  datasource:
+    url: ${LAB_DB_URL:jdbc:h2:file:./data/replay-lab;MODE=PostgreSQL;DB_CLOSE_ON_EXIT=FALSE}
+    username: ${LAB_DB_USER:sa}
+    password: ${LAB_DB_PASSWORD:}
+replay:
+  lab-user: ${LAB_USER:lab}
+  lab-password: ${LAB_PASSWORD}
+  allowed-hosts: ${REPLAY_ALLOWED_HOSTS:localhost,127.0.0.1,kafka}
+  allow-plaintext: true
+  worker-enabled: true
+  metrics-group: orders-demo
+  local-kafka:
+    enabled: true
+    bootstrap: ${KAFKA_BOOTSTRAP:localhost:19092}

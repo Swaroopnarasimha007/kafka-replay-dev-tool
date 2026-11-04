@@ -1,0 +1,96 @@
+name: kafka-replay-lab
+services:
+  kafka:
+    image: apache/kafka:3.9.1
+    environment:
+      CLUSTER_ID: dGVzdC1rYWZrYS1sYWItMQ
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+      KAFKA_LOG_RETENTION_MS: -1
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: [CMD-SHELL, '/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list >/dev/null 2>&1']
+      interval: 10s
+      timeout: 10s
+      retries: 15
+    restart: unless-stopped
+  demo:
+    build: .
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+    volumes:
+      - ./config:/app/config:ro
+      - demo-data:/app/data
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: replay
+      POSTGRES_USER: replay
+      POSTGRES_PASSWORD: ${LAB_DB_PASSWORD:?Set LAB_DB_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U replay -d replay']
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+  console:
+    build:
+      context: ..
+      dockerfile: kafka_v1_implementation/console.Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: lab
+      LAB_BIND: 0.0.0.0
+      LAB_PORT: 8080
+      LAB_USER: ${LAB_USER:-lab}
+      LAB_PASSWORD: ${LAB_PASSWORD:?Set LAB_PASSWORD in .env (at least 12 characters)}
+      LAB_DB_URL: jdbc:postgresql://postgres:5432/replay
+      LAB_DB_USER: replay
+      LAB_DB_PASSWORD: ${LAB_DB_PASSWORD:?Set LAB_DB_PASSWORD in .env}
+      KAFKA_BOOTSTRAP: kafka:9092
+      REPLAY_ALLOWED_HOSTS: kafka
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      demo:
+        condition: service_started
+    restart: unless-stopped
+  gateway:
+    image: caddy:2-alpine
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-http://localhost}
+    ports:
+      - '${HTTP_BIND:-127.0.0.1}:${HTTP_PORT:-8088}:80'
+      - '${HTTPS_BIND:-127.0.0.1}:${HTTPS_PORT:-8443}:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - console
+    restart: unless-stopped
+volumes:
+  kafka-data:
+  demo-data:
+  postgres-data:
+  caddy-data:
+  caddy-config:
