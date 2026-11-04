@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-@SpringBootTest @AutoConfigureMockMvc
+@SpringBootTest(properties="spring.datasource.url=jdbc:h2:mem:console;MODE=PostgreSQL;DB_CLOSE_DELAY=-1") @AutoConfigureMockMvc
 class ConsoleTest {
  @Autowired MockMvc mvc; @Autowired Browser browser;
  @Test void rejectsDashboardUrlsAndBadPorts(){for(String bad:List.of("http://localhost:9092","localhost:0","localhost:65536","localhost:9092,","user@host:9092"))assertThrows(IllegalArgumentException.class,()->Profiles.endpoints(bad));assertEquals(2,Profiles.endpoints("broker-a.example.org:9093,broker-b.example.org:9093").size());}

@@ -4,3 +4,4 @@ frontend/dist/
 frontend/node/
 *.log
 .env
+data/

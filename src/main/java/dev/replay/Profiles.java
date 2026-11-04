@@ -27,9 +27,8 @@ class Profiles {
    try {key=Base64.getDecoder().decode(env.getRequiredProperty("replay.encryption-key"));} catch(Exception e){throw new IllegalStateException("Live requires a base64 replay.encryption-key");}
    if(key.length!=32) throw new IllegalStateException("Encryption key must contain 32 bytes");
    if(env.getProperty("replay.allowed-hosts","").isBlank()) throw new IllegalStateException("Live requires replay.allowed-hosts");
-   db.execute("CREATE TABLE IF NOT EXISTS cluster_profiles(id varchar(36) PRIMARY KEY,name text NOT NULL,bootstrap text NOT NULL,cluster_id text NOT NULL,secret text NOT NULL)");
-   db.execute("CREATE TABLE IF NOT EXISTS browse_audit(id bigserial PRIMARY KEY,at timestamp with time zone DEFAULT now(),actor text,action text,coordinates text)");
   } else key=null;
+  Schema.migrate(db);
  }
  static List<String> endpoints(String bootstrap) {
   if(bootstrap==null||bootstrap.isBlank()||bootstrap.length()>4096) throw new IllegalArgumentException("Enter Kafka host:port endpoints, not an HTTP dashboard URL");

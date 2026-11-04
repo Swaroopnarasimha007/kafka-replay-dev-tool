@@ -3,6 +3,8 @@ spring:
     default: demo
   main:
     banner-mode: off
+  flyway:
+    enabled: false
 server:
   error:
     include-message: never

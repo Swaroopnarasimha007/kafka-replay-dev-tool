@@ -1,4 +1,4 @@
-# Kafka Replay Console — step 1
+# Kafka Replay Console — step 2
 
 Build (JDK 17–25; initial build needs network access):
 
@@ -46,3 +46,28 @@ No group ACL is needed because reads use direct assignment without group members
 Restrict discovery with `replay.topic-pattern` and/or explicit `replay.topics`.
 
 See [API contract](docs/API.md) and [step handover](docs/HANDOVER_STEP_1.md).
+
+## Plan and approve a replay
+
+As Admin, open **Manage mappings**, choose a destination, list the exact retry/DLT
+headers to remove, and attest the source contains original Spring DLT key/value bytes.
+As an authorized Operator, select the mapping, set browse filters, rate and scan
+limit, and click **Freeze preview using current filters**. Review count, destination,
+policy changes, boundaries and digest. Explicitly select the displayed positions
+for a partial scan, supply a reason and choose whether to run a one-record canary,
+then approve. Reopen the job from **Approved jobs** after restart.
+
+Approval appends no Kafka records. Execution and release remain disabled until
+step 3. Demo persists mappings/manifests/jobs in `./data/replay-demo*`; keep this
+directory with the release for restart persistence. Demo uses the same planner and
+approval code with synthetic source bytes. Live mode uses PostgreSQL.
+
+Step 2 commands:
+```powershell
+.\scripts\smoke-planner.ps1
+python scripts\verify_manifest.py docs\fixtures\source-500.json docs\fixtures\approved-500-verifier.json
+```
+
+See [planning API and state contract](docs/STEP_2_API.md) and
+[handover to step 3](docs/HANDOVER_STEP_2.md) for exact storage/digest rules,
+tests, fixtures, known pending environment checks and next implementation scope.
