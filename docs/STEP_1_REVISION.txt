@@ -1,0 +1,3 @@
+Implementation commit: b8d0de2e8cd220bc28cdaaca1e3eda5818833c47
+Tested JAR SHA256: BA89406DEC63DF0FA2E44F17D4093FD8C5EF71A38C06984881264EA90261981E
+Follow-up documentation commit records this SHA and Unix wrapper executable metadata.
