@@ -2,7 +2,9 @@ $ErrorActionPreference='Stop'
 $labRoot=Split-Path $PSScriptRoot -Parent
 $state=Join-Path $labRoot 'data\processes.json'
 if(!(Test-Path $state)){Write-Host 'No managed lab processes';return}
-$entries=@(Get-Content $state -Raw|ConvertFrom-Json)
+$parsed=ConvertFrom-Json -InputObject (Get-Content $state -Raw)
+$entries=@()
+foreach($item in $parsed){$entries+=$item}
 [array]::Reverse($entries)
 foreach($entry in $entries){
  $p=Get-Process -Id $entry.id -ErrorAction SilentlyContinue

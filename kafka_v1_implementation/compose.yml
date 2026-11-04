@@ -64,15 +64,10 @@ services:
       LAB_DB_URL: jdbc:postgresql://postgres:5432/replay
       LAB_DB_USER: replay
       LAB_DB_PASSWORD: ${LAB_DB_PASSWORD:?Set LAB_DB_PASSWORD in .env}
-      KAFKA_BOOTSTRAP: kafka:9092
       REPLAY_ALLOWED_HOSTS: kafka
     depends_on:
-      kafka:
-        condition: service_healthy
       postgres:
         condition: service_healthy
-      demo:
-        condition: service_started
     restart: unless-stopped
   gateway:
     image: caddy:2-alpine

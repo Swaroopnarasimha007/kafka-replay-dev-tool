@@ -92,16 +92,31 @@ public final class Main {
                 if(!flag(settings,"consumer."+id+".enabled"))consumer.pause(consumer.assignment());else consumer.resume(consumer.assignment());
                 var records=consumer.poll(Duration.ofMillis(250));
                 for(var r:records){if(!flag(settings,"consumer."+id+".enabled")){consumer.seek(new TopicPartition(r.topic(),r.partition()),r.offset());continue;}var p=settings;var hop=r.headers().lastHeader("demo-dlt-hops");int hops=hop==null?0:ByteBuffer.wrap(hop.value()).getInt();boolean replay=hops>0;String code="NONE";
+                    Exception failure=null;
+                    var enabled=list(p,"consumer."+id+"."+(replay?"replay":"initial")+".errors");
                     try{var value=JSON.readTree(r.value());code=value.path("error").asText("NONE");
                         if(code.equals("NONE")&&value.path("amount").asDouble(0)<Double.parseDouble(get(p,"consumer."+id+".minimum.amount","0")))code="VALIDATION";
                         if(code.equals("NONE")&&list(p,"consumer."+id+".rejected.customers").contains(value.path("customer").asText()))code="BUSINESS_REJECT";
-                    }catch(Exception e){code="INVALID_JSON";}
-                    boolean fail=list(p,"consumer."+id+"."+(replay?"replay":"initial")+".errors").contains(code);
+                        if(enabled.contains(code))switch(code){
+                            case "VALIDATION" -> throw new IllegalArgumentException("Order failed validation");
+                            case "BUSINESS_REJECT" -> throw new IllegalStateException("Order rejected by consumer policy");
+                            case "TRANSIENT" -> throw new java.util.concurrent.TimeoutException("Injected downstream timeout");
+                        }
+                    }catch(com.fasterxml.jackson.core.JsonProcessingException e){
+                        code="INVALID_JSON";if(enabled.contains(code))failure=e;
+                    }catch(IllegalArgumentException | IllegalStateException | java.util.concurrent.TimeoutException e){failure=e;}
+                    boolean fail=failure!=null;
+                    if(fail)event("CONSUMER_EXCEPTION",Map.of("consumer",id,"exception",failure.getClass().getName(),"offset",r.offset(),"partition",r.partition()));
                     if(fail&&hops>=number(p,"consumer.max.dlt.hops",3)){consumer.seek(new TopicPartition(r.topic(),r.partition()),r.offset());event("HOP_LIMIT_HELD",Map.of("consumer",id,"partition",r.partition(),"offset",r.offset()));Thread.sleep(1000);continue;}
                     Thread.sleep(number(p,"consumer."+id+".delay.ms",0));
                     producer.beginTransaction();
                     try{
-                        if(fail)producer.send(new ProducerRecord<byte[],byte[]>(dlt(p),r.partition(),r.key(),r.value(),deadHeaders(r.headers(),r.partition(),r.offset(),hops+1,code,p))).get();
+                        if(fail){
+                            var headers=deadHeaders(r.headers(),r.partition(),r.offset(),hops+1,code,p);
+                            headers.remove("kafka_dlt-exception-fqcn");
+                            headers.add("kafka_dlt-exception-fqcn",failure.getClass().getName().getBytes(StandardCharsets.UTF_8));
+                            producer.send(new ProducerRecord<byte[],byte[]>(dlt(p),r.partition(),r.key(),r.value(),headers)).get();
+                        }
                         producer.sendOffsetsToTransaction(Map.of(new TopicPartition(r.topic(),r.partition()),new OffsetAndMetadata(r.offset()+1)),consumer.groupMetadata());producer.commitTransaction();
                         event(fail?"DEAD_LETTERED":"PROCESSED",Map.of("consumer",id,"partition",r.partition(),"offset",r.offset(),"replay",replay,"code",code));
                     }catch(Exception e){try{producer.abortTransaction();}catch(Exception ignored){}throw e;}
