@@ -1,0 +1,4 @@
+Step 3 implementation: d66f4467b89c7827183b1bc301917066cff98556
+Step 2 base: 1a6ea04
+Packaged replay-console.jar SHA256: 37187D62823AF17F6AC1653F38C2FDDBA3E6B3F02392549F5D99DB65E9C75149
+Verification: 33 tests passed; three isolated JAR smoke checks passed; three crash cases independently verified.
