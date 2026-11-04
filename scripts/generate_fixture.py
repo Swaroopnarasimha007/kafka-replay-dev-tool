@@ -27,5 +27,5 @@ def record(i):
 if __name__ == "__main__":
     destination = pathlib.Path(__file__).resolve().parents[1] / "docs/fixtures/source-500.json"
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(json.dumps([record(i) for i in range(500)], indent=2) + "\n", encoding="utf-8")
+    destination.write_bytes((json.dumps([record(i) for i in range(500)], indent=2) + "\n").encode("utf-8"))
     print(destination)

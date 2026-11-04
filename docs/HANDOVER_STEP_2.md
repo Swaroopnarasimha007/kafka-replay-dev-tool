@@ -77,7 +77,7 @@ in-memory demo database; it did not change project demo data or real Kafka.
 - `src/main/resources/db/migration/V1__adopt_profiles_and_audit.sql` and
   `V2__immutable_replay_plans.sql`: append new migrations, do not alter accepted ones.
 - `docs/fixtures/source-500.json`: immutable source fixture, SHA-256
-  `9081EEB2B7EE4C3C68024A0D5470ABBEFB3519D591F52FB75A823B08C7DD915D`.
+  `9B9043D05E7E83AFBEC91D498EE834FC9411D37FA68C394A5D991E384D873755`.
   Three partitions: 167/167/166 records; binary nullable keys/values, tombstones,
   duplicate headers, a null-valued business header and explicit retry headers.
 - `scripts/generate_fixture.py`: deterministic fixture generator; no need to rerun
@@ -149,3 +149,4 @@ results, manifest digest, receipt/audit trace, final release JAR and final hando
 Retain pending PostgreSQL/secured remote checks as explicitly pending until the
 required environment is available; fixture evidence and authorized remote evidence
 must remain separate.
+

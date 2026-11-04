@@ -1,0 +1,4 @@
+Implementation commit: 10b963d7b6568eafde3353dfe5768f3f2e883f65
+Base commit: 03a50cf
+Tested JAR SHA256: C3DCA4F921FECC4FBB5003653200C20753E5394964ACE1D87AE6D1C5E76CCCB8
+Follow-up documentation commit records this SHA and normalizes fixture line endings.
