@@ -1,0 +1,16 @@
+name: kafka-dev-tool
+services:
+  tool:
+    build: .
+    ports:
+      - '127.0.0.1:8088:8080'
+    environment:
+      SPRING_PROFILES_ACTIVE: lab
+      LAB_BIND: 0.0.0.0
+      LAB_PORT: 8080
+      LAB_PASSWORD: ${LAB_PASSWORD:?Set LAB_PASSWORD to at least 12 characters}
+      REPLAY_ALLOWED_HOSTS: ${REPLAY_ALLOWED_HOSTS:-host.docker.internal,localhost,127.0.0.1}
+    volumes:
+      - tool-data:/app/data
+volumes:
+  tool-data:

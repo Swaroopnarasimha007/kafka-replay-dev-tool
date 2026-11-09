@@ -1,5 +1,9 @@
+# Mini Kafka
+
+A standalone Kafka test application for Kafka Dev Tool. Start the tool separately using the [root README](../README.md).
+
 ~~~powershell
-cd C:/Work/kafka_project/kafka_v1_implementation
+cd kafka_v1_implementation
 ./scripts/setup.ps1
 ./scripts/start.ps1
 ~~~
@@ -9,7 +13,7 @@ This terminal runs Kafka, two producers and two consumers. Press Ctrl+C to stop 
 Fetch the broker's connection attributes in another terminal.
 
 ~~~powershell
-cd C:/Work/kafka_project/kafka_v1_implementation
+cd kafka_v1_implementation
 ./scripts/connection-info.ps1
 Get-Content ./data/connection.json
 ~~~
@@ -53,25 +57,15 @@ N is 1 or 2. Codes are NONE, VALIDATION, BUSINESS_REJECT, TRANSIENT and INVALID_
 
 For another server, edit config/broker.properties so listeners bind a reachable interface and advertised.listeners advertises a reachable DNS name. Configure clients with that address. The native launcher overrides the demo client's bootstrap to the local broker port.
 
-For Docker deployment, install Docker Engine and Compose v2 on the host.
+## Independent Docker startup
 
-~~~bash
-cd kafka_v1_implementation
-cp .env.example .env
-# Replace both passwords and configure domain/bind/port values.
-docker compose up -d --build
-docker compose exec demo cat /app/data/connection.json
-~~~
+Install Docker Engine and Compose v2. From this directory run:
 
-For cloud HTTPS set SITE_ADDRESS to your domain, HTTP_BIND and HTTPS_BIND to 0.0.0.0, HTTP_PORT to 80 and HTTPS_PORT to 443. Point DNS at the server. Use kafka:9092 in the console Connection tab inside this private network.
+```sh
+docker compose -f compose.yml -f compose.local.yml up --build
+```
 
-For optional host access in local Docker use the listener override.
-
-~~~bash
-docker compose -f compose.yml -f compose.local.yml up -d --build
-~~~
-
-The host bootstrap is localhost:19092. Container clients use kafka:9092.
+This starts only Kafka and the test producers/consumers. Connect Kafka Dev Tool running on the host to `localhost:19092` using PLAINTEXT. For a remote host, adjust the external advertised listener and port binding to reachable addresses before starting. Stop with Ctrl+C or `docker compose -f compose.yml -f compose.local.yml down`. Named volumes retain records.
 
 ## 3. Connection attributes and explanation
 
@@ -89,4 +83,4 @@ Existing records remain between scenarios. Use time filters for each run. Keep d
 
 Broker and consumer offsets persist in this directory's data folder. Each application restart produces a new finite batch. Run one demo instance per cluster because consumer transactional IDs are stable.
 
-The supplied Compose stack includes Kafka, the demo, PostgreSQL, the console and Caddy. Docker execution and remote deployment remain unverified on this host because Docker Engine is unavailable. The native Kafka runtime has been exercised locally.
+The native Kafka runtime has been exercised locally. Validate Docker execution in your environment.

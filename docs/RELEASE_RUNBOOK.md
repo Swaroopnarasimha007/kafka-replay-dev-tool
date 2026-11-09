@@ -1,4 +1,4 @@
-# Kafka Replay Console — run and operate
+# Kafka Dev Tool — run and operate
 
 ## One-command release
 

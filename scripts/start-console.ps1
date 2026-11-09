@@ -16,9 +16,9 @@ try {
  $env:LAB_USER=$login.username
  $env:LAB_PORT="$ConsolePort"
  $env:SPRING_PROFILES_ACTIVE='lab'
- Write-Host "Console: http://localhost:$ConsolePort | Login file: $saved | Ctrl+C to stop"
+ Write-Host "Kafka Dev Tool: http://localhost:$ConsolePort | Login file: $saved | Ctrl+C to stop"
  & java -jar "$root/target/replay-console-lab.jar"
- if($LASTEXITCODE){throw 'Console exited'}
+ if($LASTEXITCODE){throw 'Kafka Dev Tool exited'}
 } finally {
  Pop-Location
  foreach($name in $names){[Environment]::SetEnvironmentVariable($name,$previous[$name],'Process')}

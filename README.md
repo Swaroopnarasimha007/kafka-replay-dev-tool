@@ -1,77 +1,122 @@
-~~~powershell
-cd C:/Work/kafka_project
+# Kafka Dev Tool
+
+Inspect Kafka dead-letter records, preview and approve replay plans, then run a canary before releasing the remaining messages.
+
+## Run it yourself
+
+Install Git and JDK 17 or newer. On Windows, open PowerShell:
+
+```powershell
+git clone https://github.com/Swaroopnarasimha007/kafka_replay_tool.git
+cd kafka_replay_tool
 ./scripts/setup-console.ps1
 ./scripts/start-console.ps1
-~~~
+```
 
-Open http://localhost:8088. Retrieve the generated console login in another terminal.
+The Maven wrapper downloads build dependencies and builds the React UI. Open **http://localhost:8088**. In another terminal, read the generated login:
 
-~~~powershell
-cd C:/Work/kafka_project
+```powershell
 Get-Content ./data/console-login.json
-~~~
+```
 
-The terminal stays attached. Press Ctrl+C to stop the console. Stop it before rebuilding.
+In **Connection**, select **Built-in mock**, then **Continue to records** and **Browse records**. Mock data and simulated replay run inside Kafka Dev Tool without a Kafka broker. Mock timestamps are fixed sample dates, so leave time filters empty initially. The default local profile also lets you add real PLAINTEXT clusters alongside the mock.
 
-In Connection enter your Kafka bootstrap address and protocol, choose Test connection, then Save and open. Connections and jobs persist in this console directory's data folder.
+Stop with Ctrl+C. Local connections and jobs persist in `data/`. Run one tool instance per data directory. To change the HTTP port, run `./scripts/start-console.ps1 -ConsolePort 8089`.
 
-For the included demo, get the broker attributes from its independent directory.
+For macOS/Linux with JDK 17+, build and run from the repository root:
 
-~~~powershell
-cd C:/Work/kafka_project/kafka_v1_implementation
-./scripts/connection-info.ps1
-~~~
+```sh
+sh ./mvnw -B -DskipTests package
+export LAB_PASSWORD='replace-with-a-unique-password-at-least-12-characters'
+java -jar target/replay-console.jar --spring.profiles.active=lab --server.port=8088
+```
 
-Enter localhost:19092 and PLAINTEXT. Leave Kafka username/password blank. Kafka startup commands are in [its README](kafka_v1_implementation/README.md).
+Log in with username `lab` and the password you set. Existing script, JAR and configuration identifiers retain their compatibility names.
 
-## 2. Configuration options
+## Try a real connection with Mini Kafka
 
-Choose another console port.
+[Mini Kafka](kafka_v1_implementation/README.md) is a separate test application with an actual Kafka broker, two order producers and two consumers. It generates processing failures and dead-letter records. It has its own build, startup, shutdown and data directory.
 
-~~~powershell
-./scripts/start-console.ps1 -ConsolePort 8089
-~~~
+In another PowerShell terminal, from the repository root:
 
-Allow external broker hostnames before starting.
+```powershell
+cd kafka_v1_implementation
+./scripts/setup.ps1
+./scripts/start.ps1
+```
 
-~~~powershell
-$env:REPLAY_ALLOWED_HOSTS='broker-a.example.com,broker-b.example.com'
-./scripts/start-console.ps1
-~~~
+Keep it running. In Kafka Dev Tool, open **Connection** and enter:
 
-Allowlist all hostnames advertised by Kafka. The lab profile supports PLAINTEXT. For SASL_SSL, use the live profile with PostgreSQL, OIDC, encryption-key and broker settings supplied through config/application-live.example.yml.
-
-~~~powershell
-$env:SPRING_PROFILES_ACTIVE='live'
-java -jar ./target/replay-console-lab.jar --spring.config.additional-location=file:./config/application-live.example.yml
-~~~
-
-Run existing tests after stopping the console.
-
-~~~powershell
-./mvnw.cmd -B '-Dreplay.artifact-name=replay-console-lab' verify
-~~~
-
-## 3. Connection attributes and explanation
-
-| UI field | Where to get it |
+| Field | Value |
 | --- | --- |
-| Name | Choose a recognizable label |
-| Bootstrap | Kafka operator, or the demo's scripts/connection-info.ps1 |
-| Protocol | Broker listener configuration |
-| Kafka username/password | Kafka administrator for SASL_SSL, blank for the native demo |
-| CA PEM | Kafka administrator's CA chain when needed |
-| Replay username/password | Separate worker credentials supplied by the Kafka administrator for SASL_SSL |
-| Cluster ID | Returned by Test connection from broker metadata |
+| name | Mini Kafka |
+| bootstrap | localhost:19092 |
+| protocol | PLAINTEXT |
 
-The console login is generated in this directory's data/console-login.json. Kafka authentication settings belong to the Kafka deployment. Kafka passwords cannot be fetched from broker metadata.
+Choose **Test connection**, then **Save and open**. Browse `orders.DLT`. The test app's default batch sends 60 orders, including 25 configured failures. Use its `scripts/scenario.ps1 -Name replay-success` command to select a replay scenario. Keep `demo-dlt-hops` in your replay mapping's header policy.
 
-The console starts independently when Kafka is offline. Register a reachable broker through Connection. Each application owns its own runtime and data directory.
+Kafka Dev Tool and Mini Kafka can run and stop independently. Only the mock is embedded in the tool.
 
-For separate servers, Kafka bootstrap and advertised listener addresses must be reachable from the console server. Inside the supplied Compose network use kafka:9092. The browser uses the console's relative /api endpoints.
+## Connect your own local Kafka cluster
 
-Browse DLT records, create an authorized mapping, freeze a preview and approve it. In Jobs, start a canary, check the consumer outcome and release the remaining records. Receipts confirm publication. Consumer logs show downstream processing.
+1. Obtain the broker bootstrap endpoints, such as `localhost:9092`. Use Kafka endpoints, not an HTTP management dashboard URL.
+2. Ensure all broker `advertised.listeners` addresses are reachable from the machine running Kafka Dev Tool.
+3. For hostnames beyond the default `localhost`, `127.0.0.1` and `kafka`, set the allowlist before starting the tool:
 
-The native lab uses persistent H2 storage and a generated Admin login. The live profile supports PostgreSQL, OIDC and SASL_SSL. A JDK 17 or newer is required. The Maven Wrapper installs Maven and frontend build dependencies.
+```powershell
+$env:REPLAY_ALLOWED_HOSTS='localhost,127.0.0.1,broker-a.example.com,broker-b.example.com'
+./scripts/start-console.ps1
+```
 
-Additional release details are in docs/RELEASE_RUNBOOK.md. Use the launch commands at the top of this README.
+4. In **Connection**, enter a name, comma-separated `host:port` endpoints and `PLAINTEXT`. Click **Test connection**, then **Save and open**. A successful test expires after five minutes.
+5. Browse an allowed dead-letter topic. Discovery defaults to the topic policy in `src/main/resources/application.yml`. Configure `replay.topic-pattern` or `replay.topics` for other topic names.
+
+The local profile supports PLAINTEXT. Secured clusters use the live setup below.
+
+## Connect a secured local or cloud Kafka cluster
+
+The live profile supports **SASL_SSL with SCRAM-SHA-512**. Check your provider's listener and authentication settings first. IAM, OAuth Kafka authentication, SASL/PLAIN and client-certificate authentication require additional implementation.
+
+Prepare PostgreSQL and an OIDC application. Set these environment variables in the terminal that starts the tool:
+
+- `REPLAY_DB_URL` (for example `jdbc:postgresql://localhost:5432/replay`), `REPLAY_DB_USER`, `REPLAY_DB_PASSWORD`.
+- `REPLAY_OIDC_ISSUER`, `REPLAY_OIDC_CLIENT_ID`, `REPLAY_OIDC_CLIENT_SECRET`. Configure the redirect URI `http://localhost:8088/login/oauth2/code/console` for local use and supply a `roles` claim containing `Admin`, `Operator` or `Viewer`. An Admin registers connections.
+- `REPLAY_ENCRYPTION_KEY`, a persistent base64-encoded 32-byte random key used to encrypt saved credentials.
+- `REPLAY_ALLOWED_HOSTS`, a comma-separated list of every bootstrap and advertised broker hostname.
+- `REPLAY_WORKER_ENABLED=true` when you want to execute approved replays.
+
+Generate an encryption key once, then store it securely and reuse it across restarts:
+
+```powershell
+$keyBytes = New-Object byte[] 32
+[System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($keyBytes)
+$env:REPLAY_ENCRYPTION_KEY = [Convert]::ToBase64String($keyBytes)
+```
+
+After building with the setup script, start live mode directly:
+
+```powershell
+java -jar ./target/replay-console-lab.jar --spring.profiles.active=live --server.port=8088
+```
+
+Open the tool and sign in. In **Connection**, supply the bootstrap endpoints, `SASL_SSL`, browse username/password, optional PEM CA chain, and separate replay username/password. Choose **Test connection**, then **Save and open**. Live mode exposes real connections only.
+
+The tool's server needs network access to every advertised broker, including any required VPN, firewall or cloud security-group access. Browse credentials need topic metadata and read permissions. Replay credentials need source reads, destination writes, transactional-ID permissions and read/write access to the receipt topic. Have your Kafka administrator provision `_replay_console_receipts` with one partition, delete-only cleanup, at least seven days of time retention and unlimited byte retention. Pre-create destination topics. See [release operations](docs/RELEASE_RUNBOOK.md) for recovery and authorization details.
+
+## Replay workflow
+
+Browse records, create an authorized source-to-destination mapping, freeze a preview and approve it. In Jobs, start the canary, inspect downstream consumer results, then release the remaining records. Receipts confirm Kafka publication. Your consumer's logs confirm application processing.
+
+## Independent Docker setups
+
+For the tool alone, set `LAB_PASSWORD` to at least 12 characters and run `docker compose up --build` from this directory. Open http://localhost:8088 with username `lab`. Mock mode works immediately. The tool stores its data in its own Docker volume.
+
+Mini Kafka has its own Compose setup described in its README. For real connections across containers or hosts, configure Kafka's advertised addresses and the tool's allowlist so every broker is reachable from the tool container. `localhost` inside a container refers to that container.
+
+## Development
+
+```powershell
+./mvnw.cmd -B verify
+```
+
+Tests include embedded-broker integration and replay recovery cases. Historical implementation notes and captured evidence live under `docs/`; use this README for current startup instructions. Docker and cloud deployment require verification in your target environment.

@@ -76,7 +76,13 @@ class Profiles {
   var tested=tests.remove(token); if(tested==null||tested.expires()<System.currentTimeMillis())throw new IllegalArgumentException("Test connection again before saving");
   try {var in=tested.input(); var profile=new Profile(UUID.randomUUID().toString(),in.name(),in.bootstrap(),tested.clusterId());db.update("INSERT INTO cluster_profiles VALUES (?,?,?,?,?)",profile.id(),profile.name(),profile.bootstrap(),profile.clusterId(),live?encrypt(json.writeValueAsString(in)):"PLAINTEXT");return profile;}catch(Exception e){throw new IllegalArgumentException("Profile could not be saved");}
  }
- List<Profile> list(){return live||localEnabled()?db.query("SELECT id,name,bootstrap,cluster_id FROM cluster_profiles",(r,n)->new Profile(r.getString(1),r.getString(2),r.getString(3),r.getString(4))):List.of(new Profile("demo","Synthetic incident sandbox","synthetic","demo-cluster"));}
+ List<Profile> list(){
+  var result=new ArrayList<Profile>();
+  if(!live)result.add(new Profile("demo","Built-in mock","synthetic","demo-cluster"));
+  if(live||localEnabled())result.addAll(db.query("SELECT id,name,bootstrap,cluster_id FROM cluster_profiles",(r,n)->new Profile(r.getString(1),r.getString(2),r.getString(3),r.getString(4))));
+  return List.copyOf(result);
+ }
+
  Input credentials(String id){if(!live&&localEnabled()&&"kafka-local".equals(id))return localInput();if(!live&&localEnabled()){String endpoint=db.queryForObject("SELECT bootstrap FROM cluster_profiles WHERE id=?",String.class,id);return new Input("Lab",endpoint,"PLAINTEXT",null,null,null,null,null); }try {return json.readValue(decrypt(db.queryForObject("SELECT secret FROM cluster_profiles WHERE id=?",String.class,id)),Input.class);}catch(Exception e){throw new IllegalArgumentException("Profile unavailable");}}
  Properties replayProps(String id) {
   var in=credentials(id);
