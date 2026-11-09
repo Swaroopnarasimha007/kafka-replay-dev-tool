@@ -18,7 +18,7 @@ Inspect Kafka dead-letter records, preview and approve replay plans, then run a 
 
 ## Demo video
 
-The demo video will be uploaded soon.
+[Watch the Kafka Dev Tool demo](docs/Kafka_demo_v1.mp4)
 
 ## Run it yourself
 
