@@ -25,8 +25,8 @@ The demo video will be uploaded soon.
 Install Git and JDK 17 or newer. On Windows, open PowerShell:
 
 ```powershell
-git clone https://github.com/Swaroopnarasimha007/kafka_replay_tool.git
-cd kafka_replay_tool
+git clone https://github.com/Swaroopnarasimha007/kafka-replay-dev-tool.git
+cd kafka-replay-dev-tool
 ./scripts/setup-console.ps1
 ./scripts/start-console.ps1
 ```
