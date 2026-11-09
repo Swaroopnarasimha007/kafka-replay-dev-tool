@@ -57,6 +57,12 @@ Choose **Test connection**, then **Save and open**. Browse `orders.DLT`. The tes
 
 Kafka Dev Tool and Mini Kafka can run and stop independently. Only the mock is embedded in the tool.
 
+## Replay workflow at a glance
+
+![Kafka Dev Tool replay workflow: inspect failed records, freeze preview, approve, run a canary, release remaining records, and track receipts.](docs/images/replay-workflow.png)
+
+[View the scalable diagram](docs/images/replay-workflow.svg)
+
 ## Connect your own local Kafka cluster
 
 1. Obtain the broker bootstrap endpoints, such as `localhost:9092`. Use Kafka endpoints, not an HTTP management dashboard URL.

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120" role="img" aria-labelledby="title desc"><title id="title">Kafka Dev Tool replay workflow</title><desc id="desc">Failed Kafka records are inspected, frozen into a preview and approved. A worker publishes a one-record canary, waits for an operator check, then replays the remainder. Kafka transactions atomically commit destination records and receipts. Receipts support recovery after a worker failure.</desc>
+<rect x="0" y="0" width="1600" height="1120" rx="0" fill="#080d12" stroke="#080d12" stroke-width="2"/>
+<text x="64" y="60" fill="#64edbb" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">KAFKA DEV TOOL</text>
+<text x="64" y="121" fill="#dce9ef" font-family="Segoe UI, Arial, sans-serif" font-size="44" font-weight="700">From failed event to controlled replay</text>
+<text x="64" y="163" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400">Replay workflow with a one-record canary enabled</text>
+<rect x="64" y="204" width="1472" height="62" rx="16" fill="#101820" stroke="#263744" stroke-width="2"/>
+<text x="86" y="236" fill="#ffd18b" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700">APPLICATION</text>
+<text x="240" y="239" fill="#dce9ef" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400">Consumer processing fails</text>
+<polyline points="555,235 618,235" fill="none" stroke="#ffd18b" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="618,235 607.4690092573155,240.75310646325045 607.4690092573155,229.24689353674955" fill="#ffd18b"/>
+<text x="643" y="239" fill="#ffd18b" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700">Dead-letter topic (DLT)</text>
+<text x="64" y="310" fill="#83bfff" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">PLAN  /  React UI + Spring Boot API</text>
+<rect x="64" y="333" width="464" height="164" rx="16" fill="#101820" stroke="#263744" stroke-width="2"/>
+<text x="86" y="370" fill="#83bfff" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="700">01</text>
+<text x="132" y="375" fill="#dce9ef" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="700">Inspect failed records</text>
+<text x="88" y="420" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Browse DLT records and filter events.</text>
+<text x="88" y="452" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Choose an authorized destination mapping.</text>
+<rect x="568" y="333" width="464" height="164" rx="16" fill="#101820" stroke="#263744" stroke-width="2"/>
+<text x="590" y="370" fill="#83bfff" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="700">02</text>
+<text x="636" y="375" fill="#dce9ef" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="700">Freeze preview</text>
+<text x="592" y="420" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Capture the exact records and routing.</text>
+<text x="592" y="452" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Review the manifest and replay rate.</text>
+<rect x="1072" y="333" width="464" height="164" rx="16" fill="#101820" stroke="#263744" stroke-width="2"/>
+<text x="1094" y="370" fill="#83bfff" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="700">03</text>
+<text x="1140" y="375" fill="#dce9ef" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="700">Approve replay</text>
+<text x="1096" y="420" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Record approval and create a saved job.</text>
+<text x="1096" y="452" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Start execution explicitly from Jobs.</text>
+<polyline points="528,414 565,414" fill="none" stroke="#83bfff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="565,414 554.4690092573155,419.75310646325045 554.4690092573155,408.24689353674955" fill="#83bfff"/>
+<polyline points="1032,414 1069,414" fill="none" stroke="#83bfff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1069,414 1058.4690092573155,419.75310646325045 1058.4690092573155,408.24689353674955" fill="#83bfff"/>
+<polyline points="1304,497 1304,530 40,530 40,655 61,655" fill="none" stroke="#64edbb" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="61,655 50.46900925731553,660.7531064632504 50.46900925731553,649.2468935367496" fill="#64edbb"/>
+<text x="64" y="576" fill="#64edbb" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">EXECUTE  /  Replay worker</text>
+<rect x="64" y="605" width="464" height="164" rx="16" fill="#101820" stroke="#263744" stroke-width="2"/>
+<text x="86" y="642" fill="#64edbb" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="700">04</text>
+<text x="132" y="647" fill="#dce9ef" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="700">Publish one canary</text>
+<text x="88" y="692" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Replay one record, then wait.</text>
+<text x="88" y="724" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Operator checks downstream processing.</text>
+<rect x="568" y="605" width="464" height="164" rx="16" fill="#101820" stroke="#263744" stroke-width="2"/>
+<text x="590" y="642" fill="#64edbb" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="700">05</text>
+<text x="636" y="647" fill="#dce9ef" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="700">Release remaining records</text>
+<text x="592" y="692" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Operator releases the approved remainder.</text>
+<text x="592" y="724" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Worker publishes rate-limited batches.</text>
+<rect x="1072" y="605" width="464" height="164" rx="16" fill="#101820" stroke="#263744" stroke-width="2"/>
+<text x="1094" y="642" fill="#64edbb" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="700">06</text>
+<text x="1140" y="647" fill="#dce9ef" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="700">Track replay results</text>
+<text x="1096" y="692" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Inspect committed receipts and progress.</text>
+<text x="1096" y="724" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Check consumer logs for business results.</text>
+<polyline points="528,686 565,686" fill="none" stroke="#64edbb" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="565,686 554.4690092573155,691.7531064632504 554.4690092573155,680.2468935367496" fill="#64edbb"/>
+<polyline points="1032,686 1069,686" fill="none" stroke="#64edbb" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1069,686 1058.4690092573155,691.7531064632504 1058.4690092573155,680.2468935367496" fill="#64edbb"/>
+<rect x="64" y="815" width="962" height="184" rx="16" fill="#101820" stroke="#64edbb" stroke-width="2"/>
+<text x="88" y="851" fill="#64edbb" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">EACH KAFKA PUBLISH BATCH</text>
+<text x="88" y="902" fill="#dce9ef" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700">Destination records  +  audit receipt</text>
+<text x="88" y="941" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400">Committed atomically in one Kafka transaction.</text>
+<text x="88" y="973" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">The canary uses the same publication path.</text>
+<rect x="1050" y="815" width="486" height="184" rx="16" fill="#101820" stroke="#83bfff" stroke-width="2"/>
+<text x="1074" y="851" fill="#83bfff" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">RECOVERY AFTER FAILURE</text>
+<text x="1074" y="903" fill="#dce9ef" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Read committed receipts.</text>
+<text x="1074" y="939" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Reconcile saved job progress,</text>
+<text x="1074" y="970" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">then resume from confirmed outcomes.</text>
+<text x="64" y="1062" fill="#94adba" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Real Kafka: Mini Kafka or your own cluster. Built-in mock simulates this workflow locally.</text>
+</svg>
