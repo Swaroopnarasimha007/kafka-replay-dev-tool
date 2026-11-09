@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1220" viewBox="0 0 1800 1220" role="img" aria-labelledby="title desc"><title id="title">Kafka Dev Tool system architecture</title><desc id="desc">React connects to a Spring Boot API and planner. A database persists plans, approvals and worker leases. The replay worker reads dead-letter events and transactionally publishes destination records with audit receipts to Kafka. Committed receipts reconcile progress after failures. An embedded mock provides simulation, while Mini Kafka runs separately.</desc>
+<rect x="0" y="0" width="1800" height="1220" rx="0" fill="#f7fafc" stroke="#f7fafc" stroke-width="2"/>
+<text x="64" y="59" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="700">KAFKA DEV TOOL</text>
+<text x="64" y="121" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="43" font-weight="700">Kafka Dev Tool system architecture</text>
+<text x="64" y="165" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400">Java 17  /  Spring Boot  /  React + TypeScript  /  Apache Kafka  /  PostgreSQL</text>
+<rect x="430" y="220" width="680" height="714" rx="18" fill="#eef5f8" stroke="#d9e3ea" stroke-width="2"/>
+<text x="458" y="259" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">KAFKA DEV TOOL  ·  APPLICATION BOUNDARY</text>
+<rect x="64" y="305" width="280" height="150" rx="18" fill="#ffffff" stroke="#d9e3ea" stroke-width="2"/>
+<text x="88" y="359" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700">Web client</text>
+<text x="88" y="400" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400">React + TypeScript</text>
+<text x="88" y="431" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400">Inspect · plan · monitor</text>
+<polyline points="344,380 475,380" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="475,380 464.4690092573155,385.75310646325045 464.4690092573155,374.24689353674955" fill="#087f8c"/>
+<text x="353" y="355" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">REST</text>
+<rect x="478" y="300" width="584" height="160" rx="18" fill="#ffffff" stroke="#d9e3ea" stroke-width="2"/>
+<text x="505" y="352" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700">Spring Boot API + planner</text>
+<text x="505" y="395" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400">Browse DLT events · freeze manifests</text>
+<text x="505" y="431" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400">Authorize mappings · persist approvals</text>
+<polyline points="770,460 770,537" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="770,537 764.2468935367496,526.4690092573155 775.7531064632504,526.4690092573155" fill="#087f8c"/>
+<text x="790" y="502" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="400">Approved job</text>
+<rect x="478" y="540" width="584" height="155" rx="18" fill="#ffffff" stroke="#d9e3ea" stroke-width="2"/>
+<text x="505" y="592" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="29" font-weight="700">Replay worker</text>
+<text x="505" y="634" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400">Canary gate · rate-limited batches</text>
+<text x="505" y="670" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="400">Validate source records · reconcile receipts</text>
+<polyline points="770,695 770,790" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="770,790 764.2468935367496,779.4690092573155 775.7531064632504,779.4690092573155" fill="#087f8c"/>
+<text x="790" y="747" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="400">Lease + progress</text>
+<polyline points="478,424 451,424 451,850 475,850" fill="none" stroke="#64788a" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="475,850 464.4690092573155,855.7531064632504 464.4690092573155,844.2468935367496" fill="#64788a"/>
+<rect x="478" y="793" width="584" height="110" rx="18" fill="#ffffff" stroke="#d9e3ea" stroke-width="2"/>
+<text x="505" y="838" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="700">Persistent state</text>
+<text x="505" y="876" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="400">PostgreSQL (live)  /  H2 (local)</text>
+<rect x="64" y="540" width="280" height="190" rx="18" fill="#edf8f6" stroke="#b8ddd8" stroke-width="2"/>
+<text x="88" y="586" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="700">Embedded mock</text>
+<text x="88" y="628" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400">Synthetic DLT records</text>
+<text x="88" y="662" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400">Simulated publication</text>
+<text x="88" y="696" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400">Local receipt storage</text>
+<text x="64" y="773" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="400">Runs inside the application</text>
+<rect x="1230" y="220" width="506" height="714" rx="18" fill="#ffffff" stroke="#d9e3ea" stroke-width="2"/>
+<text x="1258" y="259" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">REAL KAFKA INTEGRATION</text>
+<text x="1258" y="293" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400">Your cluster or standalone Mini Kafka</text>
+<rect x="1260" y="320" width="446" height="115" rx="18" fill="#f7fafc" stroke="#d9e3ea" stroke-width="2"/>
+<text x="1284" y="366" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="700">Dead-letter topic</text>
+<text x="1284" y="403" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400">Failed events from application consumers</text>
+<polyline points="1260,354 1065,354" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1065,354 1075.5309907426845,348.24689353674955 1075.5309907426845,359.75310646325045" fill="#087f8c"/>
+<text x="1122" y="340" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="400">Browse</text>
+<polyline points="1260,408 1165,408 1165,567 1065,567" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1065,567 1075.5309907426845,561.2468935367496 1075.5309907426845,572.7531064632504" fill="#087f8c"/>
+<text x="1177" y="483" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="400">Read</text>
+<rect x="1260" y="491" width="446" height="268" rx="18" fill="#edf8f6" stroke="#b8ddd8" stroke-width="2"/>
+<text x="1284" y="524" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700">ONE KAFKA TRANSACTION</text>
+<text x="1284" y="579" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700">Destination topic</text>
+<text x="1284" y="615" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Replayed records</text>
+<text x="1284" y="676" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700">Receipt topic</text>
+<text x="1284" y="714" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="400">Committed batch outcomes</text>
+<polyline points="1062,620 1230,620 1230,580 1257,580" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1257,580 1246.4690092573155,585.7531064632504 1246.4690092573155,574.2468935367496" fill="#087f8c"/>
+<polyline points="1230,620 1230,680 1257,680" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1257,680 1246.4690092573155,685.7531064632504 1246.4690092573155,674.2468935367496" fill="#087f8c"/>
+<text x="1091" y="608" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="400">Publish</text>
+<polyline points="1260,735 1140,735 1140,670 1065,670" fill="none" stroke="#64788a" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1065,670 1075.5309907426845,664.2468935367496 1075.5309907426845,675.7531064632504" fill="#64788a"/>
+<text x="1124" y="779" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="400">Recover</text>
+<polyline points="1483,759 1483,815" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1483,815 1477.2468935367497,804.4690092573155 1488.7531064632503,804.4690092573155" fill="#087f8c"/>
+<text x="1284" y="855" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="700">Downstream consumers</text>
+<text x="1284" y="892" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="400">Application processing + business outcomes</text>
+<rect x="64" y="978" width="1672" height="166" rx="18" fill="#ffffff" stroke="#d9e3ea" stroke-width="2"/>
+<text x="88" y="1015" fill="#087f8c" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">RELIABILITY MECHANISMS</text>
+<text x="88" y="1067" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Immutable plans</text>
+<text x="88" y="1103" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400">Exact records + manifest digest</text>
+<text x="505" y="1067" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Atomic publication</text>
+<text x="505" y="1103" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400">Destination records + receipts</text>
+<text x="922" y="1067" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Worker coordination</text>
+<text x="922" y="1103" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400">Database leases + producer fencing</text>
+<text x="1339" y="1067" fill="#18324b" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Crash recovery</text>
+<text x="1339" y="1103" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400">Committed-receipt reconciliation</text>
+<text x="64" y="1191" fill="#64788a" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400">Receipt confirmation establishes Kafka publication. Consumer results establish business processing.</text>
+</svg>

@@ -1,3 +1,7 @@
+![Kafka Dev Tool system architecture](docs/images/system-architecture.png)
+
+[View scalable architecture diagram](docs/images/system-architecture.svg)
+
 # Kafka Dev Tool
 
 Inspect Kafka dead-letter records, preview and approve replay plans, then run a canary before releasing the remaining messages.
@@ -56,12 +60,6 @@ Keep it running. In Kafka Dev Tool, open **Connection** and enter:
 Choose **Test connection**, then **Save and open**. Browse `orders.DLT`. The test app's default batch sends 60 orders, including 25 configured failures. Use its `scripts/scenario.ps1 -Name replay-success` command to select a replay scenario. Keep `demo-dlt-hops` in your replay mapping's header policy.
 
 Kafka Dev Tool and Mini Kafka can run and stop independently. Only the mock is embedded in the tool.
-
-## Replay workflow at a glance
-
-![Kafka Dev Tool replay workflow: inspect failed records, freeze preview, approve, run a canary, release remaining records, and track receipts.](docs/images/replay-workflow.png)
-
-[View the scalable diagram](docs/images/replay-workflow.svg)
 
 ## Connect your own local Kafka cluster
 
