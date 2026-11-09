@@ -1,3 +1,5 @@
+<a name="architecture-diagram"></a>
+
 ![Kafka Dev Tool system architecture](docs/images/system-architecture.png)
 
 [View scalable architecture diagram](docs/images/system-architecture.svg)
@@ -5,6 +7,18 @@
 # Kafka Dev Tool
 
 Inspect Kafka dead-letter records, preview and approve replay plans, then run a canary before releasing the remaining messages.
+
+## Index
+
+Skip to your preferred section below.
+
+1. [Architecture diagram](#architecture-diagram)
+2. [Demo video](#demo-video)
+3. [Run it yourself](#run-it-yourself)
+
+## Demo video
+
+The demo video will be uploaded soon.
 
 ## Run it yourself
 
