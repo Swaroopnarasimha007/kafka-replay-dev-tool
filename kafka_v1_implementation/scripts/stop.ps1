@@ -1,7 +1,15 @@
 $ErrorActionPreference='Stop'
 $labRoot=Split-Path $PSScriptRoot -Parent
 $state=Join-Path $labRoot 'data\processes.json'
-if(!(Test-Path $state)){Write-Host 'No managed lab processes';return}
+if(!(Test-Path $state)){
+ $stale=Get-CimInstance Win32_Process | Where-Object {
+  $_.Name -eq 'java.exe' -and $_.CommandLine -match 'kafka-lab\.jar.*broker.*broker-local\.properties'
+ }
+ foreach($process in $stale){Stop-Process -Id $process.ProcessId -ErrorAction SilentlyContinue;Write-Host "Stopped leftover Kafka broker process $($process.ProcessId)"}
+ if(!$stale){Write-Host 'No managed lab processes';return}
+ Write-Host 'Data retained. You can start the lab again.'
+ return
+}
 $parsed=ConvertFrom-Json -InputObject (Get-Content $state -Raw)
 $entries=@()
 foreach($item in $parsed){$entries+=$item}
