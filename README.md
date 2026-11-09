@@ -53,27 +53,19 @@ Log in with username `lab` and the password you set. Existing script, JAR and co
 
 ## Try a real connection with Mini Kafka
 
-[Mini Kafka](kafka_v1_implementation/README.md) is a separate test application with an actual Kafka broker, two order producers and two consumers. It generates processing failures and dead-letter records. It has its own build, startup, shutdown and data directory.
+Mini Kafka is a separate test application with a real Kafka broker, two order producers and two consumers. It generates processing failures and dead-letter records.
 
-In another PowerShell terminal, from the repository root:
+1. Keep Kafka Dev Tool running in the first terminal with `./scripts/start-console.ps1`, the same command used for the mock.
+2. Open a second PowerShell terminal at the repository root and start Mini Kafka. The first run builds the application if needed.
 
-```powershell
-cd kafka_v1_implementation
-./scripts/setup.ps1
-./scripts/start.ps1
-```
+   ```powershell
+   ./scripts/start-mini-kafka.ps1
+   ```
 
-Keep it running. In Kafka Dev Tool, open **Connection** and enter:
+3. In the tool's **Connection** tab, select **Mini Kafka implementation** to prefill `localhost:19092` and `PLAINTEXT`. Choose **Test connection**, then **Save and open**. Browse `orders.DLT` once the test application produces failed records.
+4. Stop Mini Kafka with Ctrl+C in its terminal or run `./scripts/stop-mini-kafka.ps1` from another terminal at the repository root. Kafka Dev Tool can stay running.
 
-| Field | Value |
-| --- | --- |
-| name | Mini Kafka |
-| bootstrap | localhost:19092 |
-| protocol | PLAINTEXT |
-
-Choose **Test connection**, then **Save and open**. Browse `orders.DLT`. The test app's default batch sends 60 orders, including 25 configured failures. Use its `scripts/scenario.ps1 -Name replay-success` command to select a replay scenario. Keep `demo-dlt-hops` in your replay mapping's header policy.
-
-Kafka Dev Tool and Mini Kafka can run and stop independently. Only the mock is embedded in the tool.
+See [how to check Mini Kafka details](docs/MINI_KAFKA.md) for connection metadata, event logs and replay scenarios.
 
 ## Connect your own local Kafka cluster
 
@@ -86,7 +78,7 @@ $env:REPLAY_ALLOWED_HOSTS='localhost,127.0.0.1,broker-a.example.com,broker-b.exa
 ./scripts/start-console.ps1
 ```
 
-4. In **Connection**, enter a name, comma-separated `host:port` endpoints and `PLAINTEXT`. Click **Test connection**, then **Save and open**. A successful test expires after five minutes.
+4. In **Connection**, select **New connection** and enter a name, comma-separated `host:port` endpoints and `PLAINTEXT`. Click **Test connection**, then **Save and open**. A successful test expires after five minutes.
 5. Browse an allowed dead-letter topic. Discovery defaults to the topic policy in `src/main/resources/application.yml`. Configure `replay.topic-pattern` or `replay.topics` for other topic names.
 
 The local profile supports PLAINTEXT. Secured clusters use the live setup below.

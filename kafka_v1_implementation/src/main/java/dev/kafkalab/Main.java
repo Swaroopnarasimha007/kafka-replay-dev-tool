@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -70,17 +71,24 @@ public final class Main {
         }
     }
     static void reload()throws Exception{long stamp=Files.getLastModifiedTime(config).toMillis();if(settings!=null&&stamp==modified)return;var p=new Properties();try(var in=Files.newInputStream(config)){p.load(in);}validate(p);configure(p);settings=p;modified=stamp;event("CONFIG_APPLIED",Map.of("file",config.toString()));}
-    static RecordHeaders headers(String producer){var h=new RecordHeaders();h.add("demo-producer",producer.getBytes(StandardCharsets.UTF_8));return h;}
-    static RecordHeaders deadHeaders(org.apache.kafka.common.header.Headers input,int partition,long offset,int hops,String code,Properties p){var h=new RecordHeaders(input.toArray());for(String k:List.of("demo-dlt-hops","kafka_dlt-original-topic","kafka_dlt-original-partition","kafka_dlt-original-offset","kafka_dlt-exception-fqcn"))h.remove(k);h.add("demo-dlt-hops",ByteBuffer.allocate(4).putInt(hops).array());h.add("kafka_dlt-original-topic",mainTopic(p).getBytes(StandardCharsets.UTF_8));h.add("kafka_dlt-original-partition",ByteBuffer.allocate(4).putInt(partition).array());h.add("kafka_dlt-original-offset",ByteBuffer.allocate(8).putLong(offset).array());h.add("kafka_dlt-exception-fqcn",("dev.kafkalab."+code).getBytes(StandardCharsets.UTF_8));return h;}
+    static RecordHeaders headers(String producer,String traceId){
+        var headers=new RecordHeaders();
+        headers.add("demo-producer",producer.getBytes(StandardCharsets.UTF_8));
+        headers.add("trace-id",traceId.getBytes(StandardCharsets.UTF_8));
+        return headers;
+    }
+    static RecordHeaders deadHeaders(org.apache.kafka.common.header.Headers input,int partition,long offset,int hops,String code,Properties p){var h=new RecordHeaders(input.toArray());for(String k:List.of("demo-dlt-hops","kafka_dlt-original-topic","kafka_dlt-original-partition","kafka_dlt-original-offset","kafka_dlt-exception-fqcn","kafka_dlt-exception-message"))h.remove(k);h.add("demo-dlt-hops",ByteBuffer.allocate(4).putInt(hops).array());h.add("kafka_dlt-original-topic",mainTopic(p).getBytes(StandardCharsets.UTF_8));h.add("kafka_dlt-original-partition",ByteBuffer.allocate(4).putInt(partition).array());h.add("kafka_dlt-original-offset",ByteBuffer.allocate(8).putLong(offset).array());h.add("kafka_dlt-exception-fqcn",("dev.kafkalab."+code).getBytes(StandardCharsets.UTF_8));return h;}
     static void produce(int id){String seen="";String prefix="producer."+id+".";try(var producer=new KafkaProducer<byte[],byte[]>(producerConfig(settings,"demo-producer-"+id))){while(RUNNING.get()){
         var p=settings;String run=get(p,"producer.run.id","run");if(!flag(p,prefix+"enabled")||run.equals(seen)){Thread.sleep(250);continue;}seen=run;
         int count=number(p,prefix+"count",30);for(int n=0;n<count&&RUNNING.get();n++){
             if(!flag(settings,prefix+"enabled"))break;
             int every=number(p,prefix+"error.every",0);String code=every>0&&(n+1)%every==0?get(p,prefix+"error","NONE"):"NONE";
-            String key=boot+"/"+run+"/p"+id+"/"+n;int partition=n%3;var h=headers(""+id);
-            byte[] value=code.equals("INVALID_JSON")?("{invalid:"+key).getBytes(StandardCharsets.UTF_8):JSON.writeValueAsBytes(Map.of("id",key,"producer",id,"error",code,"customer",get(p,prefix+"customer","test"),"amount",Double.parseDouble(get(p,prefix+"amount","100")),"padding","x".repeat(number(p,prefix+"payload.bytes",128))));
+            String key=boot+"/"+run+"/p"+id+"/"+n;int partition=n%3;
+            String traceId=UUID.randomUUID().toString();
+            var h=headers(""+id,traceId);
+            byte[] value=code.equals("INVALID_JSON")?("{invalid:"+key).getBytes(StandardCharsets.UTF_8):JSON.writeValueAsBytes(Map.of("id",key,"createdAt",Instant.now().toString(),"producer",id,"error",code,"customer",get(p,prefix+"customer","test"),"amount",Double.parseDouble(get(p,prefix+"amount","100")),"padding","x".repeat(number(p,prefix+"payload.bytes",128))));
             String topic=flag(p,prefix+"seed.dlt")?dlt(p):mainTopic(p);if(topic.equals(dlt(p)))h=deadHeaders(h,partition,-1,1,code,p);
-            try{var result=producer.send(new ProducerRecord<byte[],byte[]>(topic,partition,key.getBytes(StandardCharsets.UTF_8),value,h)).get();event("PRODUCED",Map.of("producer",id,"topic",topic,"partition",partition,"offset",result.offset(),"code",code));}catch(Exception e){event("PRODUCER_ERROR",Map.of("producer",id,"error",root(e)));}
+            try{var result=producer.send(new ProducerRecord<byte[],byte[]>(topic,partition,key.getBytes(StandardCharsets.UTF_8),value,h)).get();event("PRODUCED",Map.of("producer",id,"topic",topic,"partition",partition,"offset",result.offset(),"code",code,"traceId",traceId));}catch(Exception e){event("PRODUCER_ERROR",Map.of("producer",id,"error",root(e)));}
             Thread.sleep(number(p,prefix+"interval.ms",100));
         }
     }}catch(InterruptedException e){Thread.currentThread().interrupt();}catch(Exception e){event("PRODUCER_STOPPED",Map.of("producer",id,"error",root(e)));}}
@@ -115,6 +123,7 @@ public final class Main {
                             var headers=deadHeaders(r.headers(),r.partition(),r.offset(),hops+1,code,p);
                             headers.remove("kafka_dlt-exception-fqcn");
                             headers.add("kafka_dlt-exception-fqcn",failure.getClass().getName().getBytes(StandardCharsets.UTF_8));
+                            if(failure.getMessage()!=null)headers.add("kafka_dlt-exception-message",failure.getMessage().getBytes(StandardCharsets.UTF_8));
                             producer.send(new ProducerRecord<byte[],byte[]>(dlt(p),r.partition(),r.key(),r.value(),headers)).get();
                         }
                         producer.sendOffsetsToTransaction(Map.of(new TopicPartition(r.topic(),r.partition()),new OffsetAndMetadata(r.offset()+1)),consumer.groupMetadata());producer.commitTransaction();
