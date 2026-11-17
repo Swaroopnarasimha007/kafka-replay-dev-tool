@@ -2,8 +2,8 @@
 
 Skip to your preferred section below.
 
-1. [Architecture diagram](#architecture-diagram)
-2. [Demo video](#demo-video)
+1. [Demo video](#demo-video)
+2. [Architecture diagram](#architecture-diagram)
 3. [Run it yourself](#run-it-yourself)
 
 <a name="architecture-diagram"></a>
