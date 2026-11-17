@@ -6,12 +6,6 @@ Skip to your preferred section below.
 2. [Architecture diagram](#architecture-diagram)
 3. [Run it yourself](#run-it-yourself)
 
-<a name="architecture-diagram"></a>
-
-![Kafka Dev Tool system architecture](docs/images/system-architecture.png)
-
-[View scalable architecture diagram](docs/images/system-architecture.svg)
-
 # Kafka Dev Tool
 
 Inspect Kafka dead-letter records, preview and approve replay plans, then run a canary before releasing the remaining messages.
@@ -20,6 +14,12 @@ Inspect Kafka dead-letter records, preview and approve replay plans, then run a 
 
 https://github.com/user-attachments/assets/63aa687c-075f-4ef4-8e7b-225af9ff5de2
 
+
+<a name="architecture-diagram"></a>
+
+![Kafka Dev Tool system architecture](docs/images/system-architecture.png)
+
+[View scalable architecture diagram](docs/images/system-architecture.svg)
 
 ## Run it yourself
 
